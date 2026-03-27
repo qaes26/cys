@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>البروتوكول السيبراني | حماية من الاختراق</title>
+    
+    <!-- خطوط جوجل (Cairo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Cairo', 'sans-serif'],
+                    },
+                    animation: {
+                        'spin-slow': 'spin 8s linear infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            background: #050505; 
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+        
+        /* التأثيرات المخصصة للرادار */
+        .radar-scan {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent 70%, rgba(59, 130, 246, 0.4) 100%);
+            animation: scan 4s linear infinite;
+        }
+        
+        @keyframes scan {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* الخلفية الشبكية */
+        .hex-bg {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l25.98 15v30L30 60 4.02 45V15z' fill-opacity='0.03' fill='%233b82f6' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
+
+        /* تأثير التشويش للنص (Glitch) */
+        .glitch-text {
+            position: relative;
+        }
+        .glitch-text::before, .glitch-text::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.8;
+        }
+        .glitch-text::before {
+            left: 2px;
+            text-shadow: -2px 0 #ff00c1;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+        .glitch-text::after {
+            left: -2px;
+            text-shadow: -2px 0 #00fff9;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim2 5s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim {
+            0% { clip: rect(10px, 9999px, 54px, 0); }
+            5% { clip: rect(31px, 9999px, 83px, 0); }
+            10% { clip: rect(62px, 9999px, 22px, 0); }
+            15% { clip: rect(12px, 9999px, 5px, 0); }
+            20% { clip: rect(78px, 9999px, 49px, 0); }
+            25% { clip: rect(49px, 9999px, 12px, 0); }
+            100% { clip: rect(49px, 9999px, 12px, 0); }
+        }
+
+        @keyframes glitch-anim2 {
+            0% { clip: rect(65px, 9999px, 100px, 0); }
+            5% { clip: rect(52px, 9999px, 74px, 0); }
+            10% { clip: rect(79px, 9999px, 85px, 0); }
+            15% { clip: rect(75px, 9999px, 5px, 0); }
+            20% { clip: rect(67px, 9999px, 61px, 0); }
+            25% { clip: rect(14px, 9999px, 79px, 0); }
+            100% { clip: rect(14px, 9999px, 79px, 0); }
+        }
+
+        /* الخط السيبراني المتحرك */
+        .cyber-line {
+            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.8), transparent);
+            height: 1px;
+            width: 100%;
+            position: relative;
+        }
+        .cyber-line::after {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: 50%;
+            width: 10px;
+            height: 5px;
+            background: #60a5fa;
+            box-shadow: 0 0 10px #60a5fa;
+            animation: run-line 3s infinite ease-in-out;
+        }
+        @keyframes run-line {
+            0% { left: 0; opacity: 0; }
+            50% { opacity: 1; }
+            100% { left: 100%; opacity: 0; }
+        }
+
+        /* فئات التحريك الأولي */
+        .fade-up-enter {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: opacity 1s ease-out, transform 1s ease-out;
+        }
+        .fade-up-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .scale-enter {
+            opacity: 0;
+            transform: scale(0);
+            transition: opacity 1s ease-out, transform 1s ease-out;
+        }
+        .scale-enter-active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* خصائص البطاقات ثلاثية الأبعاد */
+        .tilt-card {
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+    </style>
+</head>
+<body class="hex-bg selection:bg-blue-500/40 relative">
+
+    <!-- Custom Mouse Glow Tracker -->
+    <div id="mouse-glow" class="fixed pointer-events-none z-40 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] transition-transform duration-100 ease-out mix-blend-screen hidden md:block" style="transform: translate(-500px, -500px);"></div>
+
+    <!-- --- HERO SECTION --- -->
+    <header class="relative min-h-[70vh] flex flex-col items-center justify-center px-4 overflow-hidden border-b border-blue-900/30">
+        <!-- Animated Background Gradients -->
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-pulse"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-pulse" style="animation-delay: 2s;"></div>
+
+        <div class="relative z-10 text-center max-w-5xl mx-auto flex flex-col items-center pt-10">
+            
+            <!-- Radar Icon -->
+            <div id="hero-icon" class="scale-enter mb-8 relative">
+                <div class="w-24 h-24 md:w-32 md:h-32 rounded-full border border-blue-500/30 flex items-center justify-center relative bg-blue-950/40 backdrop-blur-sm shadow-[0_0_40px_rgba(59,130,246,0.3)]">
+                    <div class="radar-scan"></div>
+                    <div class="absolute inset-0 border border-blue-400/20 rounded-full scale-75"></div>
+                    <div class="absolute inset-0 border border-blue-400/20 rounded-full scale-50"></div>
+                    <i data-lucide="shield" class="w-10 h-10 md:w-12 md:h-12 text-blue-400 relative z-10"></i>
+                    <i data-lucide="crosshair" class="absolute w-full h-full text-blue-500/20 animate-spin-slow"></i>
+                </div>
+            </div>
+
+            <!-- Author Badge -->
+            <div id="hero-badge" class="fade-up-enter mb-6 w-full px-4 md:w-auto md:px-0" style="transition-delay: 300ms;">
+                <div class="inline-flex items-center justify-center gap-3 w-full md:w-auto px-6 py-3 rounded-none border-l-2 border-r-2 border-blue-500 bg-blue-950/30 backdrop-blur-md">
+                    <i data-lucide="terminal" class="w-5 h-5 text-blue-400 shrink-0"></i>
+                    <span class="font-mono text-blue-200 tracking-wider font-bold text-sm md:text-base">إعداد الطالب: أشرف العبويني</span>
+                    <i data-lucide="activity" class="w-5 h-5 text-blue-400 animate-pulse shrink-0"></i>
+                </div>
+            </div>
+
+            <!-- Main Title -->
+            <h1 id="hero-title" data-text="البروتوكول السيبراني" class="glitch-text fade-up-enter text-4xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-100 to-blue-500 mb-6" style="transition-delay: 500ms;">
+                البروتوكول السيبراني
+            </h1>
+            
+            <p id="hero-desc" class="fade-up-enter text-lg md:text-2xl text-blue-200/70 max-w-2xl font-light px-4" style="transition-delay: 700ms;">
+                نظام محاكاة متقدم يجمع أدق استراتيجيات الدفاع الرقمي المعتمدة من عمالقة التقنية لحمايتك من الاختراق.
+            </p>
+        </div>
+        
+        <div class="absolute bottom-0 w-full">
+            <div class="cyber-line"></div>
+        </div>
+    </header>
+
+    <!-- --- INTERACTIVE CARDS GRID --- -->
+    <main class="max-w-7xl mx-auto px-4 md:px-8 py-20 md:py-24 relative z-10">
+        <div class="flex items-center gap-4 mb-12 md:mb-16">
+            <div class="w-8 h-8 rounded border border-blue-500/50 flex items-center justify-center bg-blue-500/10 shrink-0">
+                <div class="w-2 h-2 bg-blue-400 rounded-full animate-ping"></div>
+            </div>
+            <h2 class="text-2xl md:text-3xl font-bold text-white tracking-wide">ترسانة الدفاع <span class="text-blue-500/50 font-mono text-lg md:text-2xl">/ / 06</span></h2>
+        </div>
+
+        <!-- سيتم تعبئة البطاقات هنا عبر JavaScript -->
+        <div id="cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
+        </div>
+    </main>
+
+    <!-- --- SOURCES FOOTER --- -->
+    <footer class="relative border-t border-blue-900/30 bg-[#03060a] pt-16 md:pt-20 pb-10 z-10 overflow-hidden">
+        <div class="absolute inset-0 opacity-[0.03]" style="background-image: linear-gradient(#3b82f6 1px, transparent 1px), linear-gradient(90deg, #3b82f6 1px, transparent 1px); background-size: 20px 20px;"></div>
+        
+        <div class="max-w-6xl mx-auto px-4 relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 border-b border-blue-900/30 pb-8">
+                <div>
+                    <h3 class="text-2xl md:text-3xl font-bold text-white mb-2 flex items-center gap-3">
+                        <i data-lucide="terminal" class="w-6 h-6 md:w-8 md:h-8 text-blue-500"></i>
+                        المصادر الموثقة
+                    </h3>
+                    <p class="text-blue-200/50 font-mono text-xs md:text-sm">VERIFIED_DATA_SOURCES // 100%_SECURE</p>
+                </div>
+            </div>
+
+            <!-- سيتم تعبئة المصادر هنا عبر JavaScript -->
+            <div id="sources-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
+            </div>
+
+            <div class="flex flex-col lg:flex-row justify-between items-center gap-4 text-slate-500 text-sm font-mono border-t border-white/5 pt-6">
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_#10b981]"></div>
+                    <span id="system-year">SYSTEM_ONLINE // </span>
+                </div>
+                <div class="px-4 py-2 border border-blue-900/50 bg-blue-950/20 text-blue-300 text-center w-full md:w-auto">
+                    PRODUCED_BY: <span class="font-bold text-white ml-1">أشرف العبويني</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // البيانات الأمنية
+        const securityData = [
+            {
+                id: 1,
+                title: "جدار الكلمات المرورية",
+                image: "https://images.pexels.com/photos/5380642/pexels-photo-5380642.jpeg?auto=compress&cs=tinysrgb&w=800",
+                icon: "lock",
+                colorClasses: { text: "text-cyan-400", bg: "bg-cyan-500", borderHover: "hover:border-cyan-500/50", iconColor: "text-cyan-500", overlay: "from-cyan-900 to-transparent", bgBlend: "bg-cyan-500/20", theme: "cyan" },
+                points: ["استخدم 14 حرفاً على الأقل (رموز، أرقام، أحرف).", "احذر من إعادة استخدام كلمات المرور لنفس الحسابات.", "فعّل المصادقة الثنائية (2FA) لتأمين مضاعف."]
+            },
+            {
+                id: 2,
+                title: "تحديث ترسانة النظام",
+                image: "https://images.pexels.com/photos/546819/pexels-photo-546819.jpeg?auto=compress&cs=tinysrgb&w=800",
+                icon: "refresh-cw",
+                colorClasses: { text: "text-emerald-400", bg: "bg-emerald-500", borderHover: "hover:border-emerald-500/50", iconColor: "text-emerald-500", overlay: "from-emerald-900 to-transparent", bgBlend: "bg-emerald-500/20", theme: "emerald" },
+                points: ["حدّث أنظمة التشغيل (Windows, iOS) لسد الثغرات.", "التحديث التلقائي هو درعك الأول ضد هجمات اليوم الصفر.", "الأنظمة المتقادمة تُعتبر أبواباً مفتوحة للمخترقين."]
+            },
+            {
+                id: 3,
+                title: "مكافحة الفيروسات",
+                image: "https://images.pexels.com/photos/60504/security-protection-anti-virus-software-60504.jpeg?auto=compress&cs=tinysrgb&w=800",
+                icon: "shield",
+                colorClasses: { text: "text-rose-400", bg: "bg-rose-500", borderHover: "hover:border-rose-500/50", iconColor: "text-rose-500", overlay: "from-rose-900 to-transparent", bgBlend: "bg-rose-500/20", theme: "rose" },
+                points: ["اعتمد برامج حماية أصيلة وموثوقة ولا تعطلها أبداً.", "جدار الحماية (Firewall) يجب أن يظل متيقظاً طوال الوقت.", "احذر من البرامج المقرصنة، فهي حصان طروادة الحديث."]
+            },
+            {
+                id: 4,
+                title: "فخاخ الهندسة الاجتماعية",
+                image: "https://images.pexels.com/photos/5380664/pexels-photo-5380664.jpeg?auto=compress&cs=tinysrgb&w=800",
+                icon: "alert-triangle",
+                colorClasses: { text: "text-amber-400", bg: "bg-amber-500", borderHover: "hover:border-amber-500/50", iconColor: "text-amber-500", overlay: "from-amber-900 to-transparent", bgBlend: "bg-amber-500/20", theme: "amber" },
+                points: ["لا تنقر على روابط مشبوهة حتى من أصدقائك أو أقاربك.", "البنوك لن تطلب كلمة مرورك عبر مكالمة أو إيميل عاجل.", "تحقق دائماً من النطاق الحقيقي (Domain) للمرسل."]
+            },
+            {
+                id: 5,
+                title: "حصانة الأجهزة المحمولة",
+                image: "https://images.pexels.com/photos/69866/pexels-photo-69866.jpeg?auto=compress&cs=tinysrgb&w=800",
+                icon: "smartphone",
+                colorClasses: { text: "text-purple-400", bg: "bg-purple-500", borderHover: "hover:border-purple-500/50", iconColor: "text-purple-500", overlay: "from-purple-900 to-transparent", bgBlend: "bg-purple-500/20", theme: "purple" },
+                points: ["حمّل تطبيقاتك من المتاجر الرسمية فقط لا غير.", "الرووت (Root) أو الجيلبريك يدمّر حماية نظامك.", "راقب أذونات التطبيقات، لا توافق على ما لا يحتاجه التطبيق."]
+            },
+            {
+                id: 6,
+                title: "أمن الشبكات المتخفية",
+                image: "https://images.pexels.com/photos/2881224/pexels-photo-2881224.jpeg?auto=compress&cs=tinysrgb&w=800",
+                icon: "wifi",
+                colorClasses: { text: "text-indigo-400", bg: "bg-indigo-500", borderHover: "hover:border-indigo-500/50", iconColor: "text-indigo-500", overlay: "from-indigo-900 to-transparent", bgBlend: "bg-indigo-500/20", theme: "indigo" },
+                points: ["الـ Wi-Fi العام المفتوح هو ساحة صيد للمخترقين.", "استخدم VPN قوي ومشفّر عند الاتصال بشبكات غير موثوقة.", "غيّر بيانات دخول الراوتر المنزلي الافتراضية فوراً."]
+            }
+        ];
+
+        // قائمة المصادر
+        const sourcesList = [
+            { name: "مركز أمان Google", url: "https://safety.google/intl/ar/security/security-tips/", domain: "google.com" },
+            { name: "Microsoft Security", url: "https://support.microsoft.com/ar-sa/security", domain: "microsoft.com" },
+            { name: "Kaspersky Center", url: "https://me.kaspersky.com/resource-center", domain: "kaspersky.com" },
+            { name: "CISA (وكالة الأمن)", url: "https://www.cisa.gov/secure-our-world", domain: "cisa.gov" },
+            { name: "أكاديمية Cisco للأمن", url: "https://www.cisco.com/c/ar_ae/products/security/what-is-cybersecurity.html", domain: "cisco.com" },
+            { name: "Norton للتوعية الأمنية", url: "https://us.norton.com/blog", domain: "norton.com" },
+            { name: "أبحاث IBM X-Force", url: "https://www.ibm.com/security/xforce", domain: "ibm.com" },
+            { name: "معهد SANS للأمن", url: "https://www.sans.org/security-awareness-training/", domain: "sans.org" }
+        ];
+
+        // تهيئة السنة الحالية
+        document.getElementById('system-year').textContent += new Date().getFullYear();
+
+        // 1. توليد البطاقات (Cards)
+        const cardsContainer = document.getElementById('cards-container');
+        securityData.forEach((item, index) => {
+            const delay = index * 150;
+            const pointsHtml = item.points.map(point => `
+                <li class="flex items-start gap-3">
+                    <i data-lucide="check-circle-2" class="w-5 h-5 shrink-0 mt-0.5 opacity-50 group-hover:opacity-100 ${item.colorClasses.iconColor} transition-opacity"></i>
+                    <span class="text-slate-400 group-hover:text-slate-200 text-sm md:text-base leading-relaxed transition-colors">${point}</span>
+                </li>
+            `).join('');
+
+            const cardHtml = `
+                <div class="tilt-card fade-up-enter" style="transition-delay: ${delay}ms">
+                    <div class="group relative h-full bg-[#0a0f18] rounded-2xl overflow-hidden border border-slate-800 ${item.colorClasses.borderHover} shadow-2xl transition-colors duration-500 flex flex-col">
+                        
+                        <!-- Image Area -->
+                        <div class="relative h-48 md:h-52 w-full overflow-hidden border-b border-white/5 image-container">
+                            <div class="absolute inset-0 ${item.colorClasses.bgBlend} mix-blend-overlay group-hover:bg-transparent transition-all duration-500 z-10"></div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-[#0a0f18] to-transparent z-10"></div>
+                            
+                            <img 
+                                src="${item.image}" 
+                                alt=""
+                                onload="this.classList.replace('opacity-0', 'opacity-60'); this.parentElement.querySelector('.placeholder-icon').classList.add('hidden');"
+                                onerror="handleImageError(this, '${item.colorClasses.overlay}', '${item.icon}')"
+                                class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out opacity-0 group-hover:opacity-100"
+                            />
+                            
+                            <!-- Placeholder icon while loading -->
+                            <div class="placeholder-icon absolute inset-0 flex items-center justify-center bg-slate-900 animate-pulse">
+                                <i data-lucide="image" class="w-8 h-8 text-slate-600"></i>
+                            </div>
+
+                            <div class="absolute top-4 right-4 z-20 p-3 bg-black/50 backdrop-blur-md rounded-xl border border-white/10 group-hover:scale-110 transition-transform">
+                                <i data-lucide="${item.icon}" class="w-6 h-6 ${item.colorClasses.text}"></i>
+                            </div>
+                        </div>
+
+                        <!-- Content Area -->
+                        <div class="p-6 md:p-8 flex-1 flex flex-col relative z-20">
+                            <h3 class="text-xl md:text-2xl font-bold mb-6 text-white group-hover:${item.colorClasses.text} transition-colors">
+                                ${item.title}
+                            </h3>
+                            <ul class="space-y-4 flex-1">
+                                ${pointsHtml}
+                            </ul>
+                        </div>
+
+                        <!-- Animated Bottom Border -->
+                        <div class="h-1 w-0 group-hover:w-full ${item.colorClasses.bg} transition-all duration-500 ease-out"></div>
+                    </div>
+                </div>
+            `;
+            cardsContainer.insertAdjacentHTML('beforeend', cardHtml);
+        });
+
+        // 2. توليد المصادر (Sources)
+        const sourcesContainer = document.getElementById('sources-container');
+        sourcesList.forEach(src => {
+            const sourceHtml = `
+                <a href="${src.url}" target="_blank" rel="noopener noreferrer" class="group block p-4 bg-blue-950/10 border border-blue-900/30 hover:border-emerald-500/50 hover:bg-emerald-900/10 transition-all rounded-lg cursor-pointer">
+                    <div class="text-xs text-blue-500 font-mono mb-2">${src.domain}</div>
+                    <div class="text-slate-300 group-hover:text-emerald-400 flex justify-between items-center transition-colors">
+                        <span class="font-bold text-sm md:text-base">${src.name}</span>
+                        <i data-lucide="external-link" class="w-4 h-4 opacity-50 group-hover:opacity-100 transition-all text-emerald-400 shrink-0"></i>
+                    </div>
+                </a>
+            `;
+            sourcesContainer.insertAdjacentHTML('beforeend', sourceHtml);
+        });
+
+        // تهيئة أيقونات Lucide
+        lucide.createIcons();
+
+        // 3. التفاعلية والأنيميشن
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // تشغيل أنيميشن الدخول الأولي
+            setTimeout(() => {
+                document.getElementById('hero-icon').classList.add('scale-enter-active');
+                document.getElementById('hero-badge').classList.add('fade-up-enter-active');
+                document.getElementById('hero-title').classList.add('fade-up-enter-active');
+                document.getElementById('hero-desc').classList.add('fade-up-enter-active');
+                
+                document.querySelectorAll('.tilt-card').forEach(card => {
+                    card.classList.add('fade-up-enter-active');
+                });
+            }, 100);
+
+            // تتبع حركة الماوس للإضاءة الخلفية
+            const mouseGlow = document.getElementById('mouse-glow');
+            window.addEventListener('mousemove', (e) => {
+                // Adjust for scroll and standard coordinates
+                mouseGlow.style.transform = `translate(${e.clientX - 128}px, ${e.clientY - 128}px)`;
+            });
+
+            // تطبيق تأثير الحركة ثلاثية الأبعاد للبطاقات (3D Tilt Effect)
+            const cards = document.querySelectorAll('.tilt-card');
+            cards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    
+                    const rotateX = ((y - centerY) / centerY) * -8;
+                    const rotateY = ((x - centerX) / centerX) * 8;
+
+                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+                    card.style.transition = `all 0.1s ease`;
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
+                    card.style.transition = `all 0.5s ease`;
+                });
+            });
+        });
+
+        // دالة طوارئ للصور (تُستدعى في حال فشل تحميل الصورة)
+        function handleImageError(imgElement, overlayColor, iconName) {
+            const container = imgElement.parentElement;
+            container.innerHTML = `
+                <div class="w-full h-full relative flex items-center justify-center bg-slate-900 overflow-hidden">
+                    <div class="absolute inset-0 opacity-30 hex-bg"></div>
+                    <div class="absolute inset-0 bg-gradient-to-br ${overlayColor} opacity-40"></div>
+                    <div class="relative z-10 p-4 bg-black/40 rounded-full border border-white/10 backdrop-blur-sm animate-pulse">
+                        <i data-lucide="${iconName}" class="w-6 h-6 text-white"></i>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
+
