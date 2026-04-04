@@ -3,453 +3,663 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>البروتوكول السيبراني | حماية من الاختراق</title>
+    <title>موسوعة الأمن السيبراني الشاملة | أشرف العبويني</title>
     
-    <!-- خطوط جوجل (Cairo) -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <!-- خطوط مخصصة -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&family=Rajdhani:wght@500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- مكتبات الانيميشن والـ 3D -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Cairo', 'sans-serif'],
+                    colors: {
+                        cyber: { bg: '#030308', cyan: '#00F3FF', magenta: '#FF003C', yellow: '#FCEE0A' }
                     },
-                    animation: {
-                        'spin-slow': 'spin 8s linear infinite',
+                    fontFamily: {
+                        arabic: ['Cairo', 'sans-serif'],
+                        tech: ['Rajdhani', 'sans-serif'],
+                        mono: ['Share Tech Mono', 'monospace']
                     }
                 }
             }
         }
     </script>
 
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-
     <style>
-        body { 
-            font-family: 'Cairo', sans-serif; 
-            background: #050505; 
-            color: #e2e8f0;
-            overflow-x: hidden;
+        /* إعدادات عامة */
+        body { background-color: #030308; color: #E2E8F0; overflow-x: hidden; margin: 0; padding: 0; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #030308; }
+        ::-webkit-scrollbar-thumb { background: #00F3FF; }
+
+        /* ==========================================================================
+           INTRO SCREEN - شاشة تسجيل الدخول والمقدمة
+           ========================================================================== */
+        #intro-screen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle at center, #0a0a1a 0%, #000000 100%);
+            z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center;
+            overflow: hidden;
         }
+
+        /* حاوية الشخصية والحركة */
+        .character-wrapper {
+            position: absolute; bottom: 15vh; left: -150px;
+            width: 120px; height: 250px;
+            transition: transform 3s linear;
+        }
+
+        /* شكل الرجل بمكوناته (SVG Style) */
+        .cyber-man { width: 100%; height: 100%; fill: #00F3FF; filter: drop-shadow(0 0 10px rgba(0,243,255,0.5)); }
         
-        /* التأثيرات المخصصة للرادار */
-        .radar-scan {
-            position: absolute;
-            inset: 0;
-            border-radius: 50%;
-            background: conic-gradient(from 0deg, transparent 70%, rgba(59, 130, 246, 0.4) 100%);
-            animation: scan 4s linear infinite;
+        .cm-head { transform-origin: center bottom; transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
+        .cm-leg-l { transform-origin: top center; }
+        .cm-leg-r { transform-origin: top center; }
+        .cm-arm-l { transform-origin: top center; }
+        .cm-arm-r { transform-origin: top center; }
+
+        /* أنيميشن المشي */
+        .walking .cm-leg-l { animation: walk-leg-l 1s infinite linear; }
+        .walking .cm-leg-r { animation: walk-leg-r 1s infinite linear; }
+        .walking .cm-arm-l { animation: walk-arm-l 1s infinite linear; }
+        .walking .cm-arm-r { animation: walk-arm-r 1s infinite linear; }
+        .walking .cm-body-group { animation: body-bob 0.5s infinite alternate; }
+
+        @keyframes walk-leg-l { 0%, 100% { transform: rotate(20deg); } 50% { transform: rotate(-20deg); } }
+        @keyframes walk-leg-r { 0%, 100% { transform: rotate(-20deg); } 50% { transform: rotate(20deg); } }
+        @keyframes walk-arm-l { 0%, 100% { transform: rotate(-15deg); } 50% { transform: rotate(15deg); } }
+        @keyframes walk-arm-r { 0%, 100% { transform: rotate(15deg); } 50% { transform: rotate(-15deg); } }
+        @keyframes body-bob { from { transform: translateY(0); } to { transform: translateY(4px); } }
+
+        /* وضعية النظر للأعلى */
+        .looking-up .cm-head { transform: translateY(-5px) rotate(-35deg); }
+        .looking-up .cyber-man { fill: #fff; filter: drop-shadow(0 0 20px #00F3FF); transition: fill 1s, filter 1s; }
+
+        /* نصوص المقدمة */
+        .intro-texts {
+            position: absolute; top: 15vh; text-align: center;
+            opacity: 0; transform: translateY(-50px);
+            pointer-events: none;
         }
+        .intro-title { font-size: 4rem; font-weight: 900; color: #00F3FF; text-shadow: 0 0 20px rgba(0,243,255,0.6); mb-4; line-height: 1.2; }
+        .intro-subtitle { font-size: 2rem; font-weight: 800; color: #fff; background: rgba(0,243,255,0.1); padding: 10px 30px; border: 1px solid #00F3FF; display: inline-block; }
+
+        /* شعاع الضوء */
+        .light-beam {
+            position: absolute; top: -100vh; left: 50%; transform: translateX(-50%);
+            width: 300px; height: 100vh;
+            background: linear-gradient(to bottom, rgba(0,243,255,0.8) 0%, rgba(0,243,255,0) 100%);
+            opacity: 0; clip-path: polygon(20% 0, 80% 0, 100% 100%, 0% 100%);
+            pointer-events: none;
+        }
+
+        /* زر الدخول */
+        #login-btn {
+            position: absolute; bottom: 40vh;
+            background: transparent; color: #FF003C; border: 2px solid #FF003C;
+            padding: 15px 40px; font-size: 1.5rem; font-weight: bold; cursor: pointer;
+            opacity: 0; pointer-events: none; font-family: 'Cairo';
+            box-shadow: 0 0 15px rgba(255,0,60,0.3);
+            text-transform: uppercase; letter-spacing: 2px;
+            transition: all 0.3s;
+        }
+        #login-btn:hover { background: #FF003C; color: #fff; box-shadow: 0 0 30px rgba(255,0,60,0.6); transform: scale(1.05); }
+
+        /* ==========================================================================
+           MAIN CONTENT - محتوى الموسوعة
+           ========================================================================== */
+        #main-content { display: none; opacity: 0; transition: opacity 1.5s; position: relative; }
         
-        @keyframes scan {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+        #canvas-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+        
+        /* Grid effect over standard background */
+        .cyber-grid-overlay {
+            position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0.15;
+            background-image: 
+                linear-gradient(rgba(0, 243, 255, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.3) 1px, transparent 1px);
+            background-size: 40px 40px;
         }
 
-        /* الخلفية الشبكية */
-        .hex-bg {
-            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l25.98 15v30L30 60 4.02 45V15z' fill-opacity='0.03' fill='%233b82f6' fill-rule='evenodd'/%3E%3C/svg%3E");
+        /* الكروت الموسوعية */
+        .encyclopedia-card {
+            background: rgba(8, 10, 18, 0.85); backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            border-top: 4px solid #00F3FF;
+            padding: 2rem; position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            transition: transform 0.4s, border-color 0.4s;
         }
-
-        /* تأثير التشويش للنص (Glitch) */
-        .glitch-text {
-            position: relative;
+        .encyclopedia-card:hover { transform: translateY(-5px); border-top-color: #FF003C; border-left-color: rgba(255, 0, 60, 0.3); }
+        
+        /* تنسيقات المحتوى الداخلي للكارت لجعله دسم وغني */
+        .card-topic-eng { font-family: 'Share Tech Mono'; color: #FF003C; letter-spacing: 2px; font-size: 0.9rem; margin-bottom: 0.5rem; display: block; }
+        .card-title { color: #fff; font-size: 2rem; font-weight: 900; margin-bottom: 1.5rem; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+        
+        .content-section { margin-bottom: 1.5rem; }
+        .section-header { 
+            color: #00F3FF; font-size: 1.2rem; font-weight: 800; margin-bottom: 0.8rem;
+            display: flex; align-items: center; gap: 8px; border-bottom: 1px solid rgba(0,243,255,0.2); padding-bottom: 5px;
         }
-        .glitch-text::before, .glitch-text::after {
-            content: attr(data-text);
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            opacity: 0.8;
+        .section-header::before { content: '>>'; color: #FF003C; font-family: 'Rajdhani'; }
+        
+        .text-body { color: #A0ABC0; font-size: 1.05rem; line-height: 1.8; text-align: justify; }
+        
+        .protection-box {
+            background: rgba(255, 0, 60, 0.05); border-right: 3px solid #FF003C; padding: 1.5rem; margin-top: 1.5rem;
         }
-        .glitch-text::before {
-            left: 2px;
-            text-shadow: -2px 0 #ff00c1;
-            clip: rect(44px, 450px, 56px, 0);
-            animation: glitch-anim 5s infinite linear alternate-reverse;
+        .protection-box ul { list-style: none; padding: 0; margin: 0; }
+        .protection-box li { 
+            position: relative; padding-right: 25px; margin-bottom: 12px; color: #CBD5E1; line-height: 1.7; font-size: 1rem; 
         }
-        .glitch-text::after {
-            left: -2px;
-            text-shadow: -2px 0 #00fff9;
-            clip: rect(44px, 450px, 56px, 0);
-            animation: glitch-anim2 5s infinite linear alternate-reverse;
-        }
-
-        @keyframes glitch-anim {
-            0% { clip: rect(10px, 9999px, 54px, 0); }
-            5% { clip: rect(31px, 9999px, 83px, 0); }
-            10% { clip: rect(62px, 9999px, 22px, 0); }
-            15% { clip: rect(12px, 9999px, 5px, 0); }
-            20% { clip: rect(78px, 9999px, 49px, 0); }
-            25% { clip: rect(49px, 9999px, 12px, 0); }
-            100% { clip: rect(49px, 9999px, 12px, 0); }
-        }
-
-        @keyframes glitch-anim2 {
-            0% { clip: rect(65px, 9999px, 100px, 0); }
-            5% { clip: rect(52px, 9999px, 74px, 0); }
-            10% { clip: rect(79px, 9999px, 85px, 0); }
-            15% { clip: rect(75px, 9999px, 5px, 0); }
-            20% { clip: rect(67px, 9999px, 61px, 0); }
-            25% { clip: rect(14px, 9999px, 79px, 0); }
-            100% { clip: rect(14px, 9999px, 79px, 0); }
-        }
-
-        /* الخط السيبراني المتحرك */
-        .cyber-line {
-            background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.8), transparent);
-            height: 1px;
-            width: 100%;
-            position: relative;
-        }
-        .cyber-line::after {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: 50%;
-            width: 10px;
-            height: 5px;
-            background: #60a5fa;
-            box-shadow: 0 0 10px #60a5fa;
-            animation: run-line 3s infinite ease-in-out;
-        }
-        @keyframes run-line {
-            0% { left: 0; opacity: 0; }
-            50% { opacity: 1; }
-            100% { left: 100%; opacity: 0; }
-        }
-
-        /* فئات التحريك الأولي */
-        .fade-up-enter {
-            opacity: 0;
-            transform: translateY(40px);
-            transition: opacity 1s ease-out, transform 1s ease-out;
-        }
-        .fade-up-enter-active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .scale-enter {
-            opacity: 0;
-            transform: scale(0);
-            transition: opacity 1s ease-out, transform 1s ease-out;
-        }
-        .scale-enter-active {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        /* خصائص البطاقات ثلاثية الأبعاد */
-        .tilt-card {
-            transform-style: preserve-3d;
-            will-change: transform;
+        .protection-box li::before { 
+            content: '⬢'; position: absolute; right: 0; top: 2px; color: #FF003C; font-size: 12px;
         }
     </style>
 </head>
-<body class="hex-bg selection:bg-blue-500/40 relative">
+<body class="font-arabic selection:bg-cyber-magenta selection:text-white">
 
-    <!-- Custom Mouse Glow Tracker -->
-    <div id="mouse-glow" class="fixed pointer-events-none z-40 w-64 h-64 bg-blue-500/10 rounded-full blur-[80px] transition-transform duration-100 ease-out mix-blend-screen hidden md:block" style="transform: translate(-500px, -500px);"></div>
+    <!-- =======================================================================
+         INTRO LOGIN SCREEN (الرجل يمشي وينظر للأعلى)
+         ======================================================================= -->
+    <div id="intro-screen">
+        <!-- شعاع الضوء المخفي في البداية -->
+        <div class="light-beam" id="lightBeam"></div>
 
-    <!-- --- HERO SECTION --- -->
-    <header class="relative min-h-[70vh] flex flex-col items-center justify-center px-4 overflow-hidden border-b border-blue-900/30">
-        <!-- Animated Background Gradients -->
-        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-600/20 rounded-full blur-[100px] animate-pulse"></div>
-        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[100px] animate-pulse" style="animation-delay: 2s;"></div>
+        <!-- النصوص التي ستظهر -->
+        <div class="intro-texts" id="introTexts">
+            <div class="intro-title font-arabic">موسوعة الأمن السيبراني</div>
+            <div class="intro-subtitle font-arabic">تم الإعداد بواسطة الطالب / أشرف العبويني</div>
+        </div>
 
-        <div class="relative z-10 text-center max-w-5xl mx-auto flex flex-col items-center pt-10">
+        <!-- الزر -->
+        <button id="login-btn" onclick="enterSystem()">تسجيل الدخول للنظام</button>
+
+        <!-- الرجل الذي يمشي (مصمم بـ SVG) -->
+        <div class="character-wrapper walking" id="charWrapper">
+            <!-- شكل سايبربانك مبسط (الهاكر/المختص السيبراني) -->
+            <svg class="cyber-man" viewBox="0 0 100 250" preserveAspectRatio="xMidYMid meet">
+                <g class="cm-body-group">
+                    <!-- ذراع يمين (خلفية) - تتأرجح للخلف بقوة -->
+                    <g class="cm-arm-r" style="transform-origin: 40px 75px;"><path fill="none" d="M40,75 C20,105 20,130 30,150" stroke="#008080" stroke-width="10" stroke-linecap="round"/></g>
+                    
+                    <!-- ساق يمين (خلفية) - تخرج من تحت المعطف -->
+                    <g class="cm-leg-r" style="transform-origin: 45px 150px;"><path fill="none" d="M45,150 C40,180 30,220 35,245" stroke="#008080" stroke-width="12" stroke-linecap="round"/></g>
+                    
+                    <!-- الجذع الأساسي (معطف سايبربانك / Trench Coat) -->
+                    <path d="M35,65 L55,65 L65,160 L20,165 Z" fill="#030308" stroke="#00F3FF" stroke-width="4" stroke-linejoin="round"/>
+                    
+                    <!-- خطوط البيانات (ديجيتال) على المعطف لتأكيد هوية التكنولوجيا -->
+                    <line x1="45" y1="65" x2="40" y2="155" stroke="#FF003C" stroke-width="2" stroke-dasharray="6 3" opacity="0.6"/>
+                    <line x1="55" y1="80" x2="60" y2="155" stroke="#00F3FF" stroke-width="2" stroke-dasharray="2 4" opacity="0.4"/>
+                    
+                    <!-- الرأس مغطى بقلنسوة الهاكرز (Hoodie) -->
+                    <g class="cm-head" style="transform-origin: 45px 65px;">
+                        <path d="M35,65 C30,25 60,15 75,45 C77,55 70,68 50,68 C45,68 40,65 35,65 Z" fill="#030308" stroke="#00F3FF" stroke-width="4" stroke-linejoin="round"/>
+                        <!-- نظارة الهاكر (قناع النيون الأحمر المألوف للأمن السيبراني) -->
+                        <path d="M58,45 L76,45" stroke="#FF003C" stroke-width="6" stroke-linecap="round" fill="none" filter="drop-shadow(0 0 4px #FF003C)"/>
+                        <!-- تفاعلات ضوئية على القلنسوة -->
+                        <circle cx="45" cy="35" r="2" fill="#00F3FF"/>
+                    </g>
+                    
+                    <!-- ساق يسار (أمامية) - تخرج من المعطف -->
+                    <g class="cm-leg-l" style="transform-origin: 50px 150px;"><path fill="none" d="M50,150 C55,180 65,220 60,245" stroke="#00F3FF" stroke-width="12" stroke-linecap="round"/></g>
+                    
+                    <!-- ذراع يسار (أمامية) - تتأرجح أمام المعطف -->
+                    <g class="cm-arm-l" style="transform-origin: 50px 75px;"><path fill="none" d="M50,75 C70,105 70,130 60,150" stroke="#00F3FF" stroke-width="10" stroke-linecap="round"/></g>
+                </g>
+            </svg>
+        </div>
+    </div>
+
+
+    <!-- =======================================================================
+         MAIN CONTENT - الموسوعة الشاملة
+         ======================================================================= -->
+    <div id="main-content">
+        <div class="cyber-grid-overlay"></div>
+        <div id="canvas-container"></div> <!-- 3D Background renders here -->
+
+        <div class="relative z-10 max-w-7xl mx-auto px-4 py-20">
             
-            <!-- Radar Icon -->
-            <div id="hero-icon" class="scale-enter mb-8 relative">
-                <div class="w-24 h-24 md:w-32 md:h-32 rounded-full border border-blue-500/30 flex items-center justify-center relative bg-blue-950/40 backdrop-blur-sm shadow-[0_0_40px_rgba(59,130,246,0.3)]">
-                    <div class="radar-scan"></div>
-                    <div class="absolute inset-0 border border-blue-400/20 rounded-full scale-75"></div>
-                    <div class="absolute inset-0 border border-blue-400/20 rounded-full scale-50"></div>
-                    <i data-lucide="shield" class="w-10 h-10 md:w-12 md:h-12 text-blue-400 relative z-10"></i>
-                    <i data-lucide="crosshair" class="absolute w-full h-full text-blue-500/20 animate-spin-slow"></i>
+            <header class="text-center mb-24">
+                <h1 class="text-5xl font-black text-white mb-2" style="text-shadow: 0 0 20px rgba(0,243,255,0.5);">الموسوعة السيبرانية الشاملة</h1>
+                <p class="text-cyber-cyan text-xl mb-4 font-mono">CYBER_SECURITY_DATABASE_V.3.1</p>
+                <div class="inline-block bg-cyber-magenta/10 border border-cyber-magenta px-8 py-2 text-cyber-magenta font-bold rounded">
+                    رئيس النظام | المُعد: الطالب أشرف العبويني
                 </div>
-            </div>
+            </header>
 
-            <!-- Author Badge -->
-            <div id="hero-badge" class="fade-up-enter mb-6 w-full px-4 md:w-auto md:px-0" style="transition-delay: 300ms;">
-                <div class="inline-flex items-center justify-center gap-3 w-full md:w-auto px-6 py-3 rounded-none border-l-2 border-r-2 border-blue-500 bg-blue-950/30 backdrop-blur-md">
-                    <i data-lucide="terminal" class="w-5 h-5 text-blue-400 shrink-0"></i>
-                    <span class="font-mono text-blue-200 tracking-wider font-bold text-sm md:text-base">إعداد الطالب: أشرف العبويني</span>
-                    <i data-lucide="activity" class="w-5 h-5 text-blue-400 animate-pulse shrink-0"></i>
-                </div>
-            </div>
-
-            <!-- Main Title -->
-            <h1 id="hero-title" data-text="البروتوكول السيبراني" class="glitch-text fade-up-enter text-4xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-b from-white via-blue-100 to-blue-500 mb-6" style="transition-delay: 500ms;">
-                البروتوكول السيبراني
-            </h1>
-            
-            <p id="hero-desc" class="fade-up-enter text-lg md:text-2xl text-blue-200/70 max-w-2xl font-light px-4" style="transition-delay: 700ms;">
-                نظام محاكاة متقدم يجمع أدق استراتيجيات الدفاع الرقمي المعتمدة من عمالقة التقنية لحمايتك من الاختراق.
-            </p>
-        </div>
-        
-        <div class="absolute bottom-0 w-full">
-            <div class="cyber-line"></div>
-        </div>
-    </header>
-
-    <!-- --- INTERACTIVE CARDS GRID --- -->
-    <main class="max-w-7xl mx-auto px-4 md:px-8 py-20 md:py-24 relative z-10">
-        <div class="flex items-center gap-4 mb-12 md:mb-16">
-            <div class="w-8 h-8 rounded border border-blue-500/50 flex items-center justify-center bg-blue-500/10 shrink-0">
-                <div class="w-2 h-2 bg-blue-400 rounded-full animate-ping"></div>
-            </div>
-            <h2 class="text-2xl md:text-3xl font-bold text-white tracking-wide">ترسانة الدفاع <span class="text-blue-500/50 font-mono text-lg md:text-2xl">/ / 06</span></h2>
-        </div>
-
-        <!-- سيتم تعبئة البطاقات هنا عبر JavaScript -->
-        <div id="cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
-        </div>
-    </main>
-
-    <!-- --- SOURCES FOOTER --- -->
-    <footer class="relative border-t border-blue-900/30 bg-[#03060a] pt-16 md:pt-20 pb-10 z-10 overflow-hidden">
-        <div class="absolute inset-0 opacity-[0.03]" style="background-image: linear-gradient(#3b82f6 1px, transparent 1px), linear-gradient(90deg, #3b82f6 1px, transparent 1px); background-size: 20px 20px;"></div>
-        
-        <div class="max-w-6xl mx-auto px-4 relative z-10">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 border-b border-blue-900/30 pb-8">
-                <div>
-                    <h3 class="text-2xl md:text-3xl font-bold text-white mb-2 flex items-center gap-3">
-                        <i data-lucide="terminal" class="w-6 h-6 md:w-8 md:h-8 text-blue-500"></i>
-                        المصادر الموثقة
-                    </h3>
-                    <p class="text-blue-200/50 font-mono text-xs md:text-sm">VERIFIED_DATA_SOURCES // 100%_SECURE</p>
-                </div>
-            </div>
-
-            <!-- سيتم تعبئة المصادر هنا عبر JavaScript -->
-            <div id="sources-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-16">
-            </div>
-
-            <div class="flex flex-col lg:flex-row justify-between items-center gap-4 text-slate-500 text-sm font-mono border-t border-white/5 pt-6">
-                <div class="flex items-center gap-2">
-                    <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_#10b981]"></div>
-                    <span id="system-year">SYSTEM_ONLINE // </span>
-                </div>
-                <div class="px-4 py-2 border border-blue-900/50 bg-blue-950/20 text-blue-300 text-center w-full md:w-auto">
-                    PRODUCED_BY: <span class="font-bold text-white ml-1">أشرف العبويني</span>
-                </div>
-            </div>
-        </div>
-    </footer>
-
-    <!-- JavaScript Logic -->
-    <script>
-        // البيانات الأمنية
-        const securityData = [
-            {
-                id: 1,
-                title: "جدار الكلمات المرورية",
-                image: "https://images.pexels.com/photos/5380642/pexels-photo-5380642.jpeg?auto=compress&cs=tinysrgb&w=800",
-                icon: "lock",
-                colorClasses: { text: "text-cyan-400", bg: "bg-cyan-500", borderHover: "hover:border-cyan-500/50", iconColor: "text-cyan-500", overlay: "from-cyan-900 to-transparent", bgBlend: "bg-cyan-500/20", theme: "cyan" },
-                points: ["استخدم 14 حرفاً على الأقل (رموز، أرقام، أحرف).", "احذر من إعادة استخدام كلمات المرور لنفس الحسابات.", "فعّل المصادقة الثنائية (2FA) لتأمين مضاعف."]
-            },
-            {
-                id: 2,
-                title: "تحديث ترسانة النظام",
-                image: "https://images.pexels.com/photos/546819/pexels-photo-546819.jpeg?auto=compress&cs=tinysrgb&w=800",
-                icon: "refresh-cw",
-                colorClasses: { text: "text-emerald-400", bg: "bg-emerald-500", borderHover: "hover:border-emerald-500/50", iconColor: "text-emerald-500", overlay: "from-emerald-900 to-transparent", bgBlend: "bg-emerald-500/20", theme: "emerald" },
-                points: ["حدّث أنظمة التشغيل (Windows, iOS) لسد الثغرات.", "التحديث التلقائي هو درعك الأول ضد هجمات اليوم الصفر.", "الأنظمة المتقادمة تُعتبر أبواباً مفتوحة للمخترقين."]
-            },
-            {
-                id: 3,
-                title: "مكافحة الفيروسات",
-                image: "https://images.pexels.com/photos/60504/security-protection-anti-virus-software-60504.jpeg?auto=compress&cs=tinysrgb&w=800",
-                icon: "shield",
-                colorClasses: { text: "text-rose-400", bg: "bg-rose-500", borderHover: "hover:border-rose-500/50", iconColor: "text-rose-500", overlay: "from-rose-900 to-transparent", bgBlend: "bg-rose-500/20", theme: "rose" },
-                points: ["اعتمد برامج حماية أصيلة وموثوقة ولا تعطلها أبداً.", "جدار الحماية (Firewall) يجب أن يظل متيقظاً طوال الوقت.", "احذر من البرامج المقرصنة، فهي حصان طروادة الحديث."]
-            },
-            {
-                id: 4,
-                title: "فخاخ الهندسة الاجتماعية",
-                image: "https://images.pexels.com/photos/5380664/pexels-photo-5380664.jpeg?auto=compress&cs=tinysrgb&w=800",
-                icon: "alert-triangle",
-                colorClasses: { text: "text-amber-400", bg: "bg-amber-500", borderHover: "hover:border-amber-500/50", iconColor: "text-amber-500", overlay: "from-amber-900 to-transparent", bgBlend: "bg-amber-500/20", theme: "amber" },
-                points: ["لا تنقر على روابط مشبوهة حتى من أصدقائك أو أقاربك.", "البنوك لن تطلب كلمة مرورك عبر مكالمة أو إيميل عاجل.", "تحقق دائماً من النطاق الحقيقي (Domain) للمرسل."]
-            },
-            {
-                id: 5,
-                title: "حصانة الأجهزة المحمولة",
-                image: "https://images.pexels.com/photos/69866/pexels-photo-69866.jpeg?auto=compress&cs=tinysrgb&w=800",
-                icon: "smartphone",
-                colorClasses: { text: "text-purple-400", bg: "bg-purple-500", borderHover: "hover:border-purple-500/50", iconColor: "text-purple-500", overlay: "from-purple-900 to-transparent", bgBlend: "bg-purple-500/20", theme: "purple" },
-                points: ["حمّل تطبيقاتك من المتاجر الرسمية فقط لا غير.", "الرووت (Root) أو الجيلبريك يدمّر حماية نظامك.", "راقب أذونات التطبيقات، لا توافق على ما لا يحتاجه التطبيق."]
-            },
-            {
-                id: 6,
-                title: "أمن الشبكات المتخفية",
-                image: "https://images.pexels.com/photos/2881224/pexels-photo-2881224.jpeg?auto=compress&cs=tinysrgb&w=800",
-                icon: "wifi",
-                colorClasses: { text: "text-indigo-400", bg: "bg-indigo-500", borderHover: "hover:border-indigo-500/50", iconColor: "text-indigo-500", overlay: "from-indigo-900 to-transparent", bgBlend: "bg-indigo-500/20", theme: "indigo" },
-                points: ["الـ Wi-Fi العام المفتوح هو ساحة صيد للمخترقين.", "استخدم VPN قوي ومشفّر عند الاتصال بشبكات غير موثوقة.", "غيّر بيانات دخول الراوتر المنزلي الافتراضية فوراً."]
-            }
-        ];
-
-        // قائمة المصادر
-        const sourcesList = [
-            { name: "مركز أمان Google", url: "https://safety.google/intl/ar/security/security-tips/", domain: "google.com" },
-            { name: "Microsoft Security", url: "https://support.microsoft.com/ar-sa/security", domain: "microsoft.com" },
-            { name: "Kaspersky Center", url: "https://me.kaspersky.com/resource-center", domain: "kaspersky.com" },
-            { name: "CISA (وكالة الأمن)", url: "https://www.cisa.gov/secure-our-world", domain: "cisa.gov" },
-            { name: "أكاديمية Cisco للأمن", url: "https://www.cisco.com/c/ar_ae/products/security/what-is-cybersecurity.html", domain: "cisco.com" },
-            { name: "Norton للتوعية الأمنية", url: "https://us.norton.com/blog", domain: "norton.com" },
-            { name: "أبحاث IBM X-Force", url: "https://www.ibm.com/security/xforce", domain: "ibm.com" },
-            { name: "معهد SANS للأمن", url: "https://www.sans.org/security-awareness-training/", domain: "sans.org" }
-        ];
-
-        // تهيئة السنة الحالية
-        document.getElementById('system-year').textContent += new Date().getFullYear();
-
-        // 1. توليد البطاقات (Cards)
-        const cardsContainer = document.getElementById('cards-container');
-        securityData.forEach((item, index) => {
-            const delay = index * 150;
-            const pointsHtml = item.points.map(point => `
-                <li class="flex items-start gap-3">
-                    <i data-lucide="check-circle-2" class="w-5 h-5 shrink-0 mt-0.5 opacity-50 group-hover:opacity-100 ${item.colorClasses.iconColor} transition-opacity"></i>
-                    <span class="text-slate-400 group-hover:text-slate-200 text-sm md:text-base leading-relaxed transition-colors">${point}</span>
-                </li>
-            `).join('');
-
-            const cardHtml = `
-                <div class="tilt-card fade-up-enter" style="transition-delay: ${delay}ms">
-                    <div class="group relative h-full bg-[#0a0f18] rounded-2xl overflow-hidden border border-slate-800 ${item.colorClasses.borderHover} shadow-2xl transition-colors duration-500 flex flex-col">
-                        
-                        <!-- Image Area -->
-                        <div class="relative h-48 md:h-52 w-full overflow-hidden border-b border-white/5 image-container">
-                            <div class="absolute inset-0 ${item.colorClasses.bgBlend} mix-blend-overlay group-hover:bg-transparent transition-all duration-500 z-10"></div>
-                            <div class="absolute inset-0 bg-gradient-to-t from-[#0a0f18] to-transparent z-10"></div>
-                            
-                            <img 
-                                src="${item.image}" 
-                                alt=""
-                                onload="this.classList.replace('opacity-0', 'opacity-60'); this.parentElement.querySelector('.placeholder-icon').classList.add('hidden');"
-                                onerror="handleImageError(this, '${item.colorClasses.overlay}', '${item.icon}')"
-                                class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 ease-out opacity-0 group-hover:opacity-100"
-                            />
-                            
-                            <!-- Placeholder icon while loading -->
-                            <div class="placeholder-icon absolute inset-0 flex items-center justify-center bg-slate-900 animate-pulse">
-                                <i data-lucide="image" class="w-8 h-8 text-slate-600"></i>
-                            </div>
-
-                            <div class="absolute top-4 right-4 z-20 p-3 bg-black/50 backdrop-blur-md rounded-xl border border-white/10 group-hover:scale-110 transition-transform">
-                                <i data-lucide="${item.icon}" class="w-6 h-6 ${item.colorClasses.text}"></i>
-                            </div>
-                        </div>
-
-                        <!-- Content Area -->
-                        <div class="p-6 md:p-8 flex-1 flex flex-col relative z-20">
-                            <h3 class="text-xl md:text-2xl font-bold mb-6 text-white group-hover:${item.colorClasses.text} transition-colors">
-                                ${item.title}
-                            </h3>
-                            <ul class="space-y-4 flex-1">
-                                ${pointsHtml}
-                            </ul>
-                        </div>
-
-                        <!-- Animated Bottom Border -->
-                        <div class="h-1 w-0 group-hover:w-full ${item.colorClasses.bg} transition-all duration-500 ease-out"></div>
-                    </div>
-                </div>
-            `;
-            cardsContainer.insertAdjacentHTML('beforeend', cardHtml);
-        });
-
-        // 2. توليد المصادر (Sources)
-        const sourcesContainer = document.getElementById('sources-container');
-        sourcesList.forEach(src => {
-            const sourceHtml = `
-                <a href="${src.url}" target="_blank" rel="noopener noreferrer" class="group block p-4 bg-blue-950/10 border border-blue-900/30 hover:border-emerald-500/50 hover:bg-emerald-900/10 transition-all rounded-lg cursor-pointer">
-                    <div class="text-xs text-blue-500 font-mono mb-2">${src.domain}</div>
-                    <div class="text-slate-300 group-hover:text-emerald-400 flex justify-between items-center transition-colors">
-                        <span class="font-bold text-sm md:text-base">${src.name}</span>
-                        <i data-lucide="external-link" class="w-4 h-4 opacity-50 group-hover:opacity-100 transition-all text-emerald-400 shrink-0"></i>
-                    </div>
-                </a>
-            `;
-            sourcesContainer.insertAdjacentHTML('beforeend', sourceHtml);
-        });
-
-        // تهيئة أيقونات Lucide
-        lucide.createIcons();
-
-        // 3. التفاعلية والأنيميشن
-        document.addEventListener('DOMContentLoaded', () => {
-            
-            // تشغيل أنيميشن الدخول الأولي
-            setTimeout(() => {
-                document.getElementById('hero-icon').classList.add('scale-enter-active');
-                document.getElementById('hero-badge').classList.add('fade-up-enter-active');
-                document.getElementById('hero-title').classList.add('fade-up-enter-active');
-                document.getElementById('hero-desc').classList.add('fade-up-enter-active');
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 
-                document.querySelectorAll('.tilt-card').forEach(card => {
-                    card.classList.add('fade-up-enter-active');
-                });
+                <!-- Topic 1 -->
+                <article class="encyclopedia-card">
+                    <span class="card-topic-eng">01 / ZERO TRUST ARCHITECTURE</span>
+                    <h2 class="card-title">هندسة الثقة المعدومة</h2>
+                    
+                    <div class="content-section">
+                        <div class="section-header">ماهي الثقة المعدومة ومفهومها؟</div>
+                        <p class="text-body">
+                            في الأنظمة القديمة كانت القاعدة هي: "احمِ الجدار الخارجي للشبكة، وأي شخص نتركه يدخل فهو موثوق". هندسة الثقة المعدومة (Zero Trust) جاءت لتهدم هذا المفهوم تماماً، وتتبنى قاعدة: <strong>"لا تثق أبداً، تحقق دائماً"</strong>. إنها تفترض أن الاختراق قد حدث بالفعل وأن المهاجم ربما يتواجد داخل الشبكة. لتوضيح الأمر، تخيل بنكاً لا يكتفي بالتأكد من هويتك عند الباب الخارجي فقط، بل يطلب هويتك وبصمتك عند دخول كل غرفه وكل ممر وعند التحدث لأي موظف. لا يوجد "ثقة ضمنية" لأي شخص، سواء كان موظفاً داخل الشركة أو عميلاً من الخارج.
+                        </p>
+                    </div>
+
+                    <div class="content-section">
+                        <div class="section-header">كيف يعمل هذا البروتوكول تقنياً؟</div>
+                        <p class="text-body">
+                            يعتمد النظام على تقسيم الشبكة المجهرية (Micro-Segmentation)، حيث يتم وضع كل خادم أو تطبيق داخل "صندوق زجاجي" معزول. عندما يطلب مستخدم الوصول، يقوم النظام بتحليل: من هو؟ من أي جهاز؟ ما هو موقعه الجغرافي؟ وفي أي وقت؟ إذا كان كل شيء سليماً يمنحه صلاحية "وصول لأدنى حد" (Least Privilege)؛ أي يفتح له الملف المطلوب فقط وليس المجلد كاملاً.
+                        </p>
+                    </div>
+
+                    <div class="protection-box">
+                        <div class="text-lg font-bold text-cyber-magenta mb-3 font-tech">>> كيف نطبق هذه الحماية عملياً؟</div>
+                        <ul>
+                            <li><strong>تفعيل المصادقة الجوهرية (MFA):</strong> لا تعتمد إطلاقاً على كلمات المرور وحدها. استخدم تطبيقات مثل Google Authenticator، فالمخترق قد يسرق كلمة سرك لكنه لا يملك هاتفك الآني.</li>
+                            <li><strong>إدارة الصلاحيات الصارمة:</strong> في عملك أو حاسوبك، لا تدخل بحساب (Admin) للاستخدام اليومي المستمر. أنشئ حساباً بصلاحيات عادية واستخدم الـ Admin للضرورة.</li>
+                            <li><strong>تحديث الأجهزة المتصلة:</strong> المبدأ يعتمد على فحص "صحة الجهاز". لا تدخل لبيانات عملك أو بنكك من جهاز مقهى إنترنت أو جهاز قديم غير محدث مليء بالثغرات.</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- Topic 2 -->
+                <article class="encyclopedia-card">
+                    <span class="card-topic-eng">02 / ADVANCED CRYPTOGRAPHY</span>
+                    <h2 class="card-title">التشفير المتقدم وحماية البيانات</h2>
+                    
+                    <div class="content-section">
+                        <div class="section-header">ما هو التشفير ولماذا هو حجر الأساس؟</div>
+                        <p class="text-body">
+                            التشفير (Cryptography) هو علم تحويل البيانات المقروءة والواضحة (مثل نصوص المحادثات، أو أرقام بطاقات الائتمان) إلى نصوص غير مقروءة ومرمزة (Ciphertext). حتى لو تمكن أمهر القراصنة من اعتراض الرسالة في منتصف الطريق بينك وبين البنك، فكل ما يراه هو خليط عشوائي من الحروف والأرقام لا قيمة له. البيانات لا تعود إلى شكلها الأصلي إلا عند وصولها للطرف الآخر الذي يمتلك "المفتاح الرياضي" لفك الشيفرة.
+                        </p>
+                    </div>
+
+                    <div class="content-section">
+                        <div class="section-header">كيف تتم عمليات الاختراق بدون التشفير؟</div>
+                        <p class="text-body">
+                            يستخدم الهكرز هجوماً يسمى (Man-in-The-Middle - رجل في المنتصف). على سبيل المثال، قد يصنع المهاجم شبكة واي-فاي وهمية في مقهى بنفس اسم الشبكة الأصلية. عندما تتصل بها وترسل رسالة "سرية" بدون تشفير، ستمر الرسالة عبر جهاز الهكر ويقرأها بكل سهولة. أما تقنيات التشفير المتقدم (مثل التشفير الطرفي End-to-End وخوازميات AES-256) فتجعل قراءة البيانات مستحيلة حرفياً وتتطلب ملايين السنين من الحواسيب الخارقة لفكها.
+                        </p>
+                    </div>
+
+                    <div class="protection-box">
+                        <div class="text-lg font-bold text-cyber-magenta mb-3 font-tech">>> كيف نطبق هذه الحماية عملياً؟</div>
+                        <ul>
+                            <li><strong>التحقق من بروتوكول HTTPS:</strong> لا تقم بإدخال أي معلومة شخصية أو كلمة مرور في موقع يبدأ بـ (http) بدون حرف (S) الذي يرمز لـ Secure (المشفّر). ابحث دائماً عن أيقونة القفل المقفول.</li>
+                            <li><strong>استخدام تطبيقات مراسلة آمنة المحتوى:</strong> اعتمد على تطبيقات تقدم تشفيراً "من النهاية للنهاية" بشكل افتراضي مثل Signal أو WhatsApp ولا تستخدم رسائل الـ SMS التقليدية للأمور شديدة الحساسية.</li>
+                            <li><strong>تشفير الأقراص الصلبة (Disk Encryption):</strong> قم بتفعيل ميزة BitLocker في ويندوز أو FileVault في الماك. في حال سُرق حاسوبك (فيزيائياً)، لن يستطيع السارق استخراج ملفاتك حتى لو أخرج الهاردديسك ووضعه في جهاز آخر.</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- Topic 3 -->
+                <article class="encyclopedia-card">
+                    <span class="card-topic-eng">03 / RANSOMWARE MITIGATION</span>
+                    <h2 class="card-title">صد وإحباط هجمات الفدية</h2>
+                    
+                    <div class="content-section">
+                        <div class="section-header">كيف تدمر برمجيات الفدية المؤسسات والأفراد؟</div>
+                        <p class="text-body">
+                            برمجيات الفدية (Ransomware) هي أخطر سلاح سيبراني في العصر الحديث. هي برامج خبيثة تتسلل للحاسوب بصمت، وبدلاً من تدمير أو سرقة الملفات بسرعة، تقوم بعملية "تشفير" قوية جداً لجميع صورك وملفاتك وقواعد البيانات الخاصة بك. لتصبح كأنها داخل خزنة لا تُفتح. بعدها يظهر لك المهاجم رسالة مرعبة على الشاشة: "تم تشفير ملفاتك، ادفع لنا 5000 دولار بعملية البيتكوين خلال 48 ساعة وسنعطيك مفتاح الفك، وإلا سيتم مسحها للأبد". هذه الهجمات أوقفت مستشفيات ضخمة وشبكات نفط عالمية عن العمل.
+                        </p>
+                    </div>
+
+                    <div class="content-section">
+                        <div class="section-header">كيف يتسلل هذا الفيروس؟ الأصناف الشائعة</div>
+                        <p class="text-body">
+                            غالباً ما يكون الضحية هو من جلب الفيروس لنفسه! يتم التسلل عبر (Phishing) رسائل تصيد احتيالية تحتوي على ملف مرفق خبيث (مثلاً: فاتورة كهرباء بصيغة PDF مزورة)، أو عبر تحميل المستخدم لبرامج وبرمجيات مقرصنة ومكركة من مواقع غير رسمية ليتهرب من دفع ثمنها، ليدفع في النهاية ثمناً أبهظ بكثير (ملفات حياته بأكملها). من أخطر الأنواع عالمياً كان فايروس WannaCry و Ryuk.
+                        </p>
+                    </div>
+
+                    <div class="protection-box">
+                        <div class="text-lg font-bold text-cyber-magenta mb-3 font-tech">>> كيف نطبق هذه الحماية عملياً؟</div>
+                        <ul>
+                            <li><strong>استراتيجية النسخ الاحتياطي (القاعدة الذهبية 3-2-1):</strong> احتفظ بـ 3 نسخ من بياناتك الهامة جداً، على نوعين مختلفين من وسائط التخزين، ونسخة واحدة على الأقل يجب أن تكون (خارج الموقع - كقرص صلب مفصول كلياً في الدرج، أو سحابة). إذا ضرب الفيروس جهازك، ستمسح النظام بالكامل وتستعيد ملفاتك من القرص المعزول.</li>
+                            <li><strong>احذر من المرفقات المخفية:</strong> الويندوز افتراضياً يخفي امتدادات الملفات. احرص على إظهارها. قد يبدو الملف كأنه "صورة.jpg" ولكنه في الحقيقة برنامج تنفيذي "صورة.jpg.exe" وسيقوم بإطلاق برمجية الفدية فور النقر عليه.</li>
+                            <li><strong>تحديث الأنظمة فوراً:</strong> الفيروسات مثل WannaCry استغلت ثغرة أمنية أطلقت مايكروسوفت تحديثاً لإغلاقها قبل أشهر، لكن الضحايا الذين كسلوا عن عمل (Update) للويندوز هم من تم تدمير أجهزتهم.</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- Topic 4 -->
+                <article class="encyclopedia-card">
+                    <span class="card-topic-eng">04 / SOCIAL ENGINEERING & DEEPFAKES</span>
+                    <h2 class="card-title">الهندسة الاجتماعية والتزييف العميق</h2>
+                    
+                    <div class="content-section">
+                        <div class="section-header">اختراق العقول بدلاً من الحواسيب</div>
+                        <p class="text-body">
+                            لماذا يرهق المخترق نفسه في محاولة اختراق جدار حماية معقد، إذا كان بإمكانه الاتصال بالموظف الذي يملك المفتاح وخداعه ليعطيه إياه؟ الهندسة الاجتماعية هي "فن التلاعب النفسي" لاستغلال الطيبة، الخوف، أو الفضول لدى الضحية. المهاجم يقوم بتكوين قصة مقنعة (مثلاً: ينتحل شخصية مهندس دعم فني يطلب الرقم السري لحل مشكلة عاجلة في حسابك). الحلقة الأضعف في الأمن السيبراني دائماً هي (الإنسان) وليست الآلة.
+                        </p>
+                    </div>
+
+                    <div class="content-section">
+                        <div class="section-header">الخطر القادم: التزييف العميق (Deepfakes) عبر الـ AI</div>
+                        <p class="text-body">
+                            مع تطور الذكاء الاصطناعي، انتقل الاحتيال لمرحلة مرعبة. التزييف العميق يسمح للمخترقين بأخذ عينات من صوت مديرك أو صديقك من فيديو له على الإنترنت، ثم استخدام برامج لإنشاء تسجيل صوتي أو حتى اتصال فيديو حي بوجهه وصوته وهو يطلب منك تحويل مبلغ كبير من المال لـ "حالة طارئة جداً". دماغ الإنسان مبرمج على تصديق ما يراه ويسمعه، مما يجعل هذا الهجوم فعالاً بنسبة عالية جداً.
+                        </p>
+                    </div>
+
+                    <div class="protection-box">
+                        <div class="text-lg font-bold text-cyber-magenta mb-3 font-tech">>> كيف نطبق هذه الحماية عملياً؟</div>
+                        <ul>
+                            <li><strong>قاعدة الشك الصحي والتحقق بخطوة منفصلة:</strong> إذا اتصل بك مديرك، البنك، أو صديقك برقم غير مألوف، أو حتى برسالة صوتية يطلب معلومات بنكية أو تحويل سريع، أوقف التواصل، واتصل أنت به برقم هاتفه المعروف لديك لكي تتأكد من أنه هو حقاً السائل.</li>
+                            <li><strong>احذر من تكتيك "الاستعجال والفزع":</strong> الهاكر الذي يمارس الهندسة الاجتماعية سيعطيك مهلة قصيرة ويخيفك ("تم اختراق بطاقتك أعطني الرقم الذي وصلك الآن لإيقاف السحب"). التسرع يلغي التفكير المنطقي. خذ نفساً عميقاً ولا تفشِ أي أسرار تحت الضغط.</li>
+                            <li><strong>صعّب حياتهم بالخصوصية المطلقة:</strong> المخترقون يدرسون حسابك على فيسبوك وتويتر لمعرفة أسماء أصدقائك، عملك، ونقاط ضعفك ليصيغوا كذبة مقنعة. قلل من مشاركة معلوماتك الدقيقة وتفاصيل حياتك للعامة على منصات التواصل.</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- Topic 5 -->
+                <article class="encyclopedia-card">
+                    <span class="card-topic-eng">05 / IOT & ENDPOINT SECURITY</span>
+                    <h2 class="card-title">حماية إنترنت الأشياء والأجهزة الطرفية</h2>
+                    
+                    <div class="content-section">
+                        <div class="section-header">مخاطر المنزل والمكتب الذكي</div>
+                        <p class="text-body">
+                            يشير إنترنت الأشياء (IoT) إلى كل الأجهزة المتصلة بالإنترنت غير الكمبيوتر والهاتف؛ مثل: كاميرات المراقبة، أجهزة التكييف الذكية، شاشات التلفزيون، الطابعات، وحتى ألعاب الأطفال الذكية. المشكلة الكارثية هنا هي أن الشركات المصنعة لهذه الأجهزة تركز على رخص الثمن والوظيفة وليس على "الأمن". هذه الأجهزة تأتي بكلمات مرور بدائية مكشوفة وموحدة لكل القطع المصنعة، مما يجعلها أهدافاً مغرية جداً للاختراق.
+                        </p>
+                    </div>
+
+                    <div class="content-section">
+                        <div class="section-header">كيف يستخدم الهاكرز غسالة ذكية لمهاجمتك؟</div>
+                        <p class="text-body">
+                            قد لا يهتم الهاكر باختراق تلفازك الذكي ليرى ماذا تشاهد. بل يهمّه أن التلفاز "متصل بنفس جهاز الراوتر (الواي-فاي)" الذي يتصل به حاسوبك الشخصي وملفات العمل الخاص بك. التلفاز يعتبر أضعف حلقة، فيخترقه بسهولة، ثم يستخدمه كـ "جسر مرور" (Pivot) لينقض منه متخفياً إلى حاسوبك الذي يكون غالباً واثقاً بأي بيانات تأتي من جهاز معه على نفس الشبكة المحلية!
+                        </p>
+                    </div>
+
+                    <div class="protection-box">
+                        <div class="text-lg font-bold text-cyber-magenta mb-3 font-tech">>> كيف نطبق هذه الحماية عملياً؟</div>
+                        <ul>
+                            <li><strong>تغيير كلمات المرور الافتراضية حتمياً:</strong> تأتي أغلب الكاميرات والأجهزة الشبيكة بكلمات مرور (admin / 1234). الهاكرز يمتلكون برامج تبحث في الإنترنت بشكل عشوائي وتجرب هذه الكلمات لتجد ملايين الكاميرات المفتوحة. غيّرها بكلمات معقدة فور تشغيلها.</li>
+                            <li><strong>عزل الأجهزة الذكية في شبكة لوحدها (VLAN/Guest Network):</strong> معظم أجهزة الراوتر الحديثة تمتلك ميزة (شبكة الضيوف). قم بتفعيلها واربط بها التلفاز والكاميرات والمقابس الذكية. واجعل حاسوبك وهاتفك على الشبكة الرئيسية. هكذا تمنع الجهاز الذكي من الوصول لملفاتك إذا تم اختراقه.</li>
+                            <li><strong>تحديث نظام تشغيل الأجهزة:</strong> لا تكتفِ بتحديث الموبايل ونسيان الطابعة وجهاز التلفاز. ادخل لإعداداتها من فترة لأخرى وابحث عن (Firmware Update) لسد ثغراتها.</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- Topic 6 -->
+                <article class="encyclopedia-card">
+                    <span class="card-topic-eng">06 / CLOUD SECURITY</span>
+                    <h2 class="card-title">وضع الأمن السحابي والمسؤولية</h2>
+                    
+                    <div class="content-section">
+                        <div class="section-header">السحابة قوية، لكن مسؤوليتك قائمة!</div>
+                        <p class="text-body">
+                            يرفع الناس ملفاتهم وصور أعمالهم إلى خدمات سحابية مثل iCloud, Google Drive, AWS, و OneDrive ظناً منهم أن "جوجل ومايكروسوفت أقوى من أن تُخترق بالتالي ملفاتي بأمان مطلق". هذا نصف الحقيقة. شركات السحابة القوية تحمي "البنية التحتية" والخوادم بشكل ممتاز، لكن يوجد مبدأ يسمى (نموذج المسؤولية المشتركة Shared Responsibility Model). أي أن الشركة المعالجة ستحمي السيرفر، لكن **أنت** المسؤول عن حماية حسابك والرقم السري الخاص بك، وأنت المسؤول عمن تشارك معه الروابط.
+                        </p>
+                    </div>
+
+                    <div class="content-section">
+                        <div class="section-header">أبرز ثغرات تسريب البيانات السحابية</div>
+                        <p class="text-body">
+                            أغلب اختراقات وتفضيح البيانات الكبيرة السحابية عالمياً لم تكن ناتجة عن "كسر تشفير خوادم جوجل"، بل كانت بسبب (أخطاء تكوين / Misconfigurations) ارتكبها المستخدم نفسه! مثل رفع ملفات شديدة الحساسية ونسيان وضع خيار "تحديد من يمكنه المشاهدة"، أو ترك قاعدة البيانات السحابية برابط مفتوح للعامة دون قصد، أو استخدام الموظف لكمة سر ضعيفة لحسابه السحابي ليتم اختراق الحساب وتحميل الملفات بسهولة وسلاسة بأمر نظامي.
+                        </p>
+                    </div>
+
+                    <div class="protection-box">
+                        <div class="text-lg font-bold text-cyber-magenta mb-3 font-tech">>> كيف نطبق هذه الحماية عملياً؟</div>
+                        <ul>
+                            <li><strong>مراجعة أذونات الروابط (Access Control):</strong> عندما تقوم بعمل (Share - مشاركة) لملف أو مجلد من Google Drive، لا تتركه أبداً على خيار "أي شخص يمتلك الرابط يمكنه المشاهدة". قم بإضافة عناوين البريد الإلكتروني (الإيميلات) للأشخاص المعنيين حصراً لكي لا يُسرب الرابط.</li>
+                            <li><strong>التدقيق الدوري في صلاحيات التطبيقات الخارجية:</strong> نحن نوافق كثيراً على أزرار "التسجيل السريع باستخدام جوجل/ابل" على مواقع عشوائية ونعطيها صلاحية الوصول للسحابة. اذهب لإعدادات حسابك، وازل التطبيقات القديمة والغير معروفة التي تمتلك صلاحية للوصول لملفاتك.</li>
+                            <li><strong>تشفير إضافي محلي للأسرار:</strong> إذا كان لديك ملف (مستندات بنكية شديدة الحساسية، صور عائلية خاصة جداً)، فمن الجيد وضعها داخل ملف (WinRAR) أو تطبيق تشفير وإغلاقه برقم سري محلي من جهازك، **ثم** رفعه للسحابة. هكذا تصبح الحماية مضاعفة حتى لو اخترق حسابك.</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- Topic 7 -->
+                <article class="encyclopedia-card">
+                    <span class="card-topic-eng">07 / NETWORK INTRUSION DETECTION</span>
+                    <h2 class="card-title">اكتشاف الاختراقات ومراقبة الشبكة</h2>
+                    
+                    <div class="content-section">
+                        <div class="section-header">كيف تكتشف أنك تحت الهجوم الآن؟</div>
+                        <p class="text-body">
+                            الجدران النارية (Firewalls) تمنع الدخول، لكن ماذا لو وجد المهاجم طريقة للتسلل؟ هنا يأتي دور نظام كشف التسلل والاختراق (IDS - Intrusion Detection System). هذا النظام لا يعمل كجدار، بل كـ "رادار أمني وحراس دورية". يقوم بمراقبة كل حركة البيانات الواردة والصادرة عبر الشبكة بشكل دقيق. هو يعرف أن حركة تدفق البيانات في الساعة 3 عصراً هي حركة تصفح عادية (HTTP/HTTPS)، لكن إذا لاحظ في الساعة الرابعة فجراً أن جهاز المحاسب لديك يقوم بنقل (آلاف الغيغابايت) إلى طرف مجهول خارج الدولة، سيطلق النظام صفارة الإنذار ويفصل الاتصال فوراً باعتبار أن هناك عملية تسريب أو سرقة جارية!
+                        </p>
+                    </div>
+
+                    <div class="content-section">
+                        <div class="section-header">أساليب الكشف (Signatures vs Anomalies)</div>
+                        <p class="text-body">
+                            هناك طريقتان للكشف: الأولى "الكشف بالتوقيع" وتشبه جهاز الشرطة الذي يطابق بصمات المشتبه بهم بقائمة المطلوبين؛ النظام يعرف شكل وبصمة الفيروسات القديمة ويحظرها. الثانية وهي الأذكى تسمى "الكشف بالشذوذ"، وهي أن النظام يراقب عملك لأسابيع ويفهم "النشاط العادي"، وأي تصرف يختلف جذرياً (تصرف غير مألوف أو شاذ) سيعتبره هجوماً! هذه التقنية المتقدمة تصطاد الاختراقات المعقدة والجديدة التي لم يسبق رؤيتها.
+                        </p>
+                    </div>
+
+                    <div class="protection-box">
+                        <div class="text-lg font-bold text-cyber-magenta mb-3 font-tech">>> كيف نطبق هذه الحماية عملياً؟</div>
+                        <ul>
+                            <li><strong>لا تعطل جدار الحماية (Firewall) أبداً:</strong> يأتي نظام ويندوز وماك بجدران حماية وأدوات مراقبة مجانية ممتازة. بعض الناس يعطلها لتسريع بعض الألعاب، وهذا خطأ كارثي يضع جهازك على شبكة مكشوفة تماماً. تأكد أنها بوضع (On).</li>
+                            <li><strong>تفعيل تنبيهات الوصول المجهول (Login Alerts):</strong> قم بتفعيل التنبيهات على كل حساباتك (إذا تم تسجيل الدخول من جهاز جديد أو دولة غريبة أرسل لي إيميلاً). هذا يعتبر نظام IDS مصغراً لك يكشف اختراق حساباتك اللحظي فتقوم بطلب الخروج من جميع الأجهزة وتغيير الرقم السري.</li>
+                            <li><strong>انتبه لعلامات الإجهاد الغير مبرر للحاسوب:</strong> إذا ارتفع صوت مروحة الحاسوب بشكل غريب، وكان استهلاك المعالج (CPU) مرتفعاً جداً بلا سبب، فربما تكون قد سقطت ضحية لبرمجية استخراج العملات الرقمية (Cryptojacking)، وهو هجوم يتجاوز الجدران النارية ويحتاج لتدقيق في "المهام الصادرة".</li>
+                        </ul>
+                    </div>
+                </article>
+
+                <!-- Topic 8 -->
+                <article class="encyclopedia-card">
+                    <span class="card-topic-eng">08 / AI-POWERED THREATS</span>
+                    <h2 class="card-title">التهديدات المدعومة بالذكاء الاصطناعي</h2>
+                    
+                    <div class="content-section">
+                        <div class="section-header">عصر الهجمات الآلية فائقة الذكاء</div>
+                        <p class="text-body">
+                            إن تقنيات الذكاء الاصطناعي (AI) مثل النماذج اللغوية الضخمة (LLMs) أحدثت ثورة في الطب والهندسة... ولكن الهاكرز وجدوا فيها السلاح الأمثل! في الماضي، كان المهاجم يحتاج لأسابيع لكتابة وبرمجة الشيفرات الخبيثة وتجربتها. الآن بضغطات بسيطة للذكاء الاصطناعي، يولد الهاكرز المئات من الفيروسات والشيفرات الفريدة يومياً لتجنب برامج الحماية، والأخطر أن هذه الفيروسات قادرة على "التحور وتغيير شكلها" بشكل تلقائي داخلياً كلما واجهت عقبة حماية! ما يسمى بـ (Polymorphic Malware).
+                        </p>
+                    </div>
+
+                    <div class="content-section">
+                        <div class="section-header">استغلال الذكاء الاصطناعي لاستهداف الجماهير</div>
+                        <p class="text-body">
+                            سابقاً، كانت رسائل الاحتيال والاختراق مليئة بالأخطاء الإملائية والترجمة الركيكة، فكان اكتشافها سهلاً. اليوم، الذكاء الاصطناعي يقوم بصياغة رسائل وإيميلات تصيد احتيالية بأسلوب لغوي رصين ومتقن، لا بل ويدرس ضحيته. الذكاء يولد أبحاثاً من السوشيال ميديا حول اهتماماتك ليكتب لك رسالة تقرأ كأنها مكتوبة من أعز زملاء عملك، مما رفع نسب الوقوع في فخ الاحتيال لأرقام قياسية لا يتخيلها العقل البشري.
+                        </p>
+                    </div>
+
+                    <div class="protection-box">
+                        <div class="text-lg font-bold text-cyber-magenta mb-3 font-tech">>> كيف نطبق هذه الحماية عملياً؟</div>
+                        <ul>
+                            <li><strong>محاربة الذكاء بالذكاء (AI for Security):</strong> لم تعد برامج مكافحة الفيروسات العادية التي توقظك بتنبيه صوتي تنفع! اليوم أنت تحتاج في جهازك أو مؤسستك لحلول أمنية (NGAV - الجيل القادم لمكافحة الفيروسات) والتي تعمل بقلب الذكاء الاصطناعي أيضاً، لتقوم بتحليل أنماط وسلوك الملفات في أجزاء من الثانية وتتوقع الهجوم.</li>
+                            <li><strong>عدم مشاركة معلومات حساسة مع نماذج الذكاء (AI Chatbots):</strong> لا تقم بكتابة أسرار عملك، أسماء زبائنك، أو الشيفرات المصدرية لبرامج شركتك في ChatGPT أو غيره لتحليلها أو مساعدتك. هذه الأنظمة تتعلم وتتغذى على البيانات، وقد تُخرج معلوماتك بالخطأ لاحقاً استجابة لمستخدم بحث عنها!</li>
+                            <li><strong>تربية "الشك المنهجي":</strong> لم يعد ممكناً الوثوق 100% بأي شيء تراه. تتبع قاعدة أن "إذا بدا الأمر مغرياً أو حقيقياً لدرجة الامتياز، فغالباً هو محاكاة آلية". دقق في العناوين والروابط (URL) المخفية أسفل أزرار الرسائل. الدقة والملاحظة البشرية العالية هي الجدار الدفاعي الأقوى ضد أوهام الذكاء الاصطناعي.</li>
+                        </ul>
+                    </div>
+                </article>
+
+            </div>
+            
+            <!-- قسم المصادر والمراجع -->
+            <section class="mt-20 p-8 border border-cyber-cyan/30 rounded-lg bg-cyber-bg/80 relative overflow-hidden backdrop-blur-md">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-cyber-cyan opacity-10 blur-3xl"></div>
+                
+                <h2 class="text-3xl font-tech text-cyber-cyan mb-3 text-center tracking-widest text-shadow-[0_0_15px_rgba(0,243,255,0.4)]">
+                    المصادر والمراجع (REFERENCES)
+                </h2>
+                <p class="text-center font-arabic mb-8 text-gray-400">منظمات وجهات عالمية تم الاستناد إلى تقاريرها الموثوقة لبناء هذه الموسوعة:</p>
+                
+                <div class="flex flex-wrap justify-center gap-4 font-mono">
+                    <a href="https://www.cisa.gov" target="_blank" class="px-6 py-2 border border-cyber-cyan text-cyber-cyan hover:bg-cyber-cyan hover:text-black transition-all hover:shadow-[0_0_15px_#00F3FF]">CISA.gov</a>
+                    <a href="https://owasp.org" target="_blank" class="px-6 py-2 border border-cyber-cyan text-cyber-cyan hover:bg-cyber-cyan hover:text-black transition-all hover:shadow-[0_0_15px_#00F3FF]">OWASP</a>
+                    <a href="https://www.nist.gov/cybersecurity" target="_blank" class="px-6 py-2 border border-cyber-cyan text-cyber-cyan hover:bg-cyber-cyan hover:text-black transition-all hover:shadow-[0_0_15px_#00F3FF]">NIST DB</a>
+                    <a href="https://www.sans.org" target="_blank" class="px-6 py-2 border border-cyber-cyan text-cyber-cyan hover:bg-cyber-cyan hover:text-black transition-all hover:shadow-[0_0_15px_#00F3FF]">SANS Inst.</a>
+                    <a href="https://attack.mitre.org" target="_blank" class="px-6 py-2 border border-cyber-cyan text-cyber-cyan hover:bg-cyber-cyan hover:text-black transition-all hover:shadow-[0_0_15px_#00F3FF]">MITRE ATT&CK</a>
+                    <a href="https://www.kaspersky.com" target="_blank" class="px-6 py-2 border border-cyber-cyan text-cyber-cyan hover:bg-cyber-cyan hover:text-black transition-all hover:shadow-[0_0_15px_#00F3FF]">Kaspersky Labs</a>
+                    <a href="https://www.microsoft.com/en-us/security" target="_blank" class="px-6 py-2 border border-cyber-cyan text-cyber-cyan hover:bg-cyber-cyan hover:text-black transition-all hover:shadow-[0_0_15px_#00F3FF]">MS Sec</a>
+                    <a href="https://www.crowdstrike.com" target="_blank" class="px-6 py-2 border border-cyber-cyan text-cyber-cyan hover:bg-cyber-cyan hover:text-black transition-all hover:shadow-[0_0_15px_#00F3FF]">CrowdStrike</a>
+                </div>
+            </section>
+
+            <footer class="mt-20 text-center pb-12 border-t border-cyber-cyan/30 pt-10">
+                <div class="font-mono text-cyber-cyan text-xl mb-4 text-shadow-[0_0_10px_#00F3FF]">SYSTEM OF CYBERSECURITY CREATED BY : أشرف العبويني</div>
+                <p class="text-gray-500 font-tech uppercase tracking-widest text-sm">Data secure encryption enabled | End of Database | © 2026</p>
+            </footer>
+        </div>
+    </div>
+
+    <!-- 스크립트 Scripts -->
+    <script>
+        // ==========================================================
+        // 1. INTRO ANIMATION CONTROL (CSS Timings + Display change)
+        // ==========================================================
+        const introScreen = document.getElementById('intro-screen');
+        const charWrapper = document.getElementById('charWrapper');
+        const lightBeam = document.getElementById('lightBeam');
+        const introTexts = document.getElementById('introTexts');
+        const loginBtn = document.getElementById('login-btn');
+        const mainContent = document.getElementById('main-content');
+
+        window.onload = () => {
+            // انطلاق الحركة: الشخصية تمشي لمنتصف الشاشة
+            setTimeout(() => {
+                charWrapper.style.transform = 'translateX(calc(50vw))'; // يمشي للمنتصف
             }, 100);
 
-            // تتبع حركة الماوس للإضاءة الخلفية
-            const mouseGlow = document.getElementById('mouse-glow');
-            window.addEventListener('mousemove', (e) => {
-                // Adjust for scroll and standard coordinates
-                mouseGlow.style.transform = `translate(${e.clientX - 128}px, ${e.clientY - 128}px)`;
+            // بعد 3 ثواني يتوقف المشي وينظر للأعلى
+            setTimeout(() => {
+                charWrapper.classList.remove('walking'); // إيقاف تحريك الأرجل
+                charWrapper.classList.add('looking-up'); // تفعيل رأس مرفوع
+            }, 3000);
+
+            // بعد 4 ثواني: نزول شعاع الضوء، ونزول النص
+            setTimeout(() => {
+                lightBeam.style.opacity = '0.3'; // إضاءة خفيفة
+                // تحريك النصوص بـ GSAP لمظهر سلس وجميل
+                gsap.to(introTexts, { y: 0, opacity: 1, duration: 1.5, ease: "power4.out" });
+            }, 3800);
+
+            // بعد 5 ثواني: يظهر زر الدخول بقوة
+            setTimeout(() => {
+                gsap.to(loginBtn, { opacity: 1, pointerEvents: 'all', duration: 1 });
+            }, 5000);
+        };
+
+        // دالة يتم استدعاؤها عند نقر زر الدخول
+        function enterSystem() {
+            // إخفاء الـ Intro وتشغيل المحتوى الاساسي
+            gsap.to(introScreen, { 
+                opacity: 0, duration: 1, 
+                onComplete: () => {
+                    introScreen.style.display = 'none';
+                    mainContent.style.display = 'block';
+                    // اظهار المحتوى الرئيسي ببطء
+                    setTimeout(() => { mainContent.style.opacity = '1'; initThreeJS(); }, 100);
+                }
+            });
+        }
+
+        // ==========================================================
+        // 2. THREE.JS CYBERPUNK BACKGROUND CORE
+        // ==========================================================
+        function initThreeJS() {
+            const container = document.getElementById('canvas-container');
+            const scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x030308, 0.015);
+
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 30;
+
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+
+            // إضافة جزيئات طائرة لتعطي مظهر البيانات الكثيفة
+            const particlesGeo = new THREE.BufferGeometry();
+            const particlesCount = 1500;
+            const posArray = new Float32Array(particlesCount * 3);
+            const colsArray = new Float32Array(particlesCount * 3);
+            
+            const colorCyan = new THREE.Color(0x00F3FF);
+            const colorMagenta = new THREE.Color(0xFF003C);
+
+            for(let i = 0; i < particlesCount * 3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 100; // مساحة واسعة
+                
+                // تلوين عشوائي بين الأزرق والوردي
+                const mixedColor = colorCyan.clone().lerp(colorMagenta, Math.random());
+                colsArray[i*3] = mixedColor.r;
+                colsArray[i*3+1] = mixedColor.g;
+                colsArray[i*3+2] = mixedColor.b;
+            }
+
+            particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            particlesGeo.setAttribute('color', new THREE.BufferAttribute(colsArray, 3));
+
+            const material = new THREE.PointsMaterial({
+                size: 0.15, vertexColors: true, transparent: true, opacity: 0.7
+            });
+            const particlesMesh = new THREE.Points(particlesGeo, material);
+            scene.add(particlesMesh);
+
+            // شبكة معقدة في الخلف
+            const geometryGroup = new THREE.Group();
+            
+            // شبكة كروية
+            const sphereGeo = new THREE.IcosahedronGeometry(15, 1);
+            const sphereLineMat = new THREE.LineBasicMaterial({ color: 0x00F3FF, transparent: true, opacity: 0.1 });
+            const sphereLines = new THREE.LineSegments(new THREE.WireframeGeometry(sphereGeo), sphereLineMat);
+            geometryGroup.add(sphereLines);
+
+            // شبكة كروية أكبر ومائلة
+            const sphereGeo2 = new THREE.IcosahedronGeometry(22, 2);
+            const sphereLineMat2 = new THREE.LineBasicMaterial({ color: 0xFF003C, transparent: true, opacity: 0.05 });
+            const sphereLines2 = new THREE.LineSegments(new THREE.WireframeGeometry(sphereGeo2), sphereLineMat2);
+            geometryGroup.add(sphereLines2);
+
+            scene.add(geometryGroup);
+
+            // تفاعل الماوس
+            let mouseX = 0; let mouseY = 0;
+            document.addEventListener('mousemove', (event) => {
+                mouseX = (event.clientX / window.innerWidth) * 2 - 1;
+                mouseY = -(event.clientY / window.innerHeight) * 2 + 1;
             });
 
-            // تطبيق تأثير الحركة ثلاثية الأبعاد للبطاقات (3D Tilt Effect)
-            const cards = document.querySelectorAll('.tilt-card');
-            cards.forEach(card => {
-                card.addEventListener('mousemove', (e) => {
-                    const rect = card.getBoundingClientRect();
-                    const x = e.clientX - rect.left;
-                    const y = e.clientY - rect.top;
-                    const centerX = rect.width / 2;
-                    const centerY = rect.height / 2;
-                    
-                    const rotateX = ((y - centerY) / centerY) * -8;
-                    const rotateY = ((x - centerX) / centerX) * 8;
+            // الأنيميشن اللوب
+            const animate = () => {
+                requestAnimationFrame(animate);
+                
+                particlesMesh.rotation.y -= 0.0005;
+                particlesMesh.rotation.x += 0.0002;
 
-                    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-                    card.style.transition = `all 0.1s ease`;
-                });
+                geometryGroup.rotation.x += 0.001;
+                geometryGroup.rotation.y += 0.002;
 
-                card.addEventListener('mouseleave', () => {
-                    card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)`;
-                    card.style.transition = `all 0.5s ease`;
+                // تحريك الكاميرا ببطء بناءً على الماوس
+                camera.position.x += (mouseX * 5 - camera.position.x) * 0.05;
+                camera.position.y += (mouseY * 5 - camera.position.y) * 0.05;
+                camera.lookAt(scene.position);
+
+                renderer.render(scene, camera);
+            };
+            animate();
+
+            // الاستجابة لتغيير حجم الشاشة
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            // GSAP Scroll Animations للكروت بعد تحميل الواجهة
+            gsap.registerPlugin(ScrollTrigger);
+            const cards = gsap.utils.toArray('.encyclopedia-card');
+            cards.forEach((card, i) => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: "top 85%",
+                    },
+                    y: 60, opacity: 0, duration: 0.9, ease: "power3.out",
+                    delay: i % 2 === 0 ? 0 : 0.2 // تأثير سحب يمين/يسار
                 });
             });
-        });
-
-        // دالة طوارئ للصور (تُستدعى في حال فشل تحميل الصورة)
-        function handleImageError(imgElement, overlayColor, iconName) {
-            const container = imgElement.parentElement;
-            container.innerHTML = `
-                <div class="w-full h-full relative flex items-center justify-center bg-slate-900 overflow-hidden">
-                    <div class="absolute inset-0 opacity-30 hex-bg"></div>
-                    <div class="absolute inset-0 bg-gradient-to-br ${overlayColor} opacity-40"></div>
-                    <div class="relative z-10 p-4 bg-black/40 rounded-full border border-white/10 backdrop-blur-sm animate-pulse">
-                        <i data-lucide="${iconName}" class="w-6 h-6 text-white"></i>
-                    </div>
-                </div>
-            `;
-            lucide.createIcons();
         }
     </script>
 </body>
 </html>
-
